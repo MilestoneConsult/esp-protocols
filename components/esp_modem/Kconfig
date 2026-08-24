@@ -16,6 +16,22 @@ menu "esp-modem"
             in command mode might come fragmented in rare cases so might need to retry
             AT commands.
 
+    config ESP_MODEM_CMUX_COMMAND
+        string "CMUX command"
+        default "AT+CMUX=0"
+        help
+            AT command used to put the modem into CMUX mode.
+            Do not include the terminating carriage return.
+
+    config ESP_MODEM_CMUX_DELAY_MS_AFTER_COMMAND
+        int "Delay after CMUX command (ms)"
+        default 100
+        range 0 5000
+        help
+            Delay after sending the CMUX command and before creating
+            CMUX virtual terminals. Some modems need time to switch
+            from command mode to CMUX mode.
+
     config ESP_MODEM_USE_INFLATABLE_BUFFER_IF_NEEDED
         bool "Use inflatable buffer in DCE"
         default n

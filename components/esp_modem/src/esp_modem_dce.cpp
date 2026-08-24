@@ -213,7 +213,7 @@ bool DCE_Mode::set_unsafe(DTE *dte, ModuleIf *device, Netif &netif, modem_mode m
             return false;
         }
         device->set_mode(modem_mode::CMUX_MODE);    // switch the device into CMUX mode
-        usleep(100'000);                            // some devices need a few ms to switch
+        usleep(CONFIG_ESP_MODEM_CMUX_DELAY_MS_AFTER_COMMAND * 1'000);
 
         if (!dte->set_mode(modem_mode::CMUX_MODE)) {
             return false;
@@ -225,7 +225,7 @@ bool DCE_Mode::set_unsafe(DTE *dte, ModuleIf *device, Netif &netif, modem_mode m
             return false;
         }
         device->set_mode(modem_mode::CMUX_MODE);
-        usleep(100'000);
+        usleep(CONFIG_ESP_MODEM_CMUX_DELAY_MS_AFTER_COMMAND * 1'000);
 
         if (!dte->set_mode(m)) {
             return false;

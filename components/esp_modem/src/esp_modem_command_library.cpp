@@ -377,7 +377,7 @@ command_result send_sms(CommandableIf *t, const std::string &number, const std::
 command_result set_cmux(CommandableIf *t)
 {
     ESP_LOGV(TAG, "%s", __func__);
-    return generic_command_common(t, "AT+CMUX=0\r");
+    return generic_command_common(t, std::string(CONFIG_ESP_MODEM_CMUX_COMMAND) + "\r");
 }
 
 static sim_pin_state parse_cpin_response(const std::string &out)
