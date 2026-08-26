@@ -441,11 +441,11 @@ bool DTE::command_cb::process_line(uint8_t *data, size_t consumed, size_t len, D
     }
 
     // Fallback to legacy URC handler if enhanced handler not set
-    if (urc_handler) {
+    // Skip it while a command is actively awaiting its response, so command replies aren't reported as URCs
+    bool command_active = (got_line != nullptr && result == command_result::TIMEOUT);
+    if (urc_handler && !command_active) {
         bool consume_buffer = urc_handler(data, consumed + len) != command_result::TIMEOUT;
-        if (result != command_result::TIMEOUT || got_line == nullptr) {
-            return consume_buffer;   // this line has been processed already (got OK or FAIL previously)
-        }
+        return consume_buffer;   // this line has been processed already (got OK or FAIL previously)
     }
 #endif
 
