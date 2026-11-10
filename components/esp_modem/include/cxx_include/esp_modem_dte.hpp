@@ -113,6 +113,7 @@ public:
      */
     void set_urc_cb(got_line_cb line_cb)
     {
+        Scoped<Lock> lock(command_cb.line_lock);    // process_line() copies the handler under this lock
         command_cb.urc_handler = std::move(line_cb);
     }
 
@@ -149,6 +150,7 @@ public:
      */
     void set_enhanced_urc_cb(enhanced_urc_cb enhanced_cb)
     {
+        Scoped<Lock> lock(command_cb.line_lock);    // process_line() copies the handler under this lock
         command_cb.enhanced_urc_handler = std::move(enhanced_cb);
     }
 #endif

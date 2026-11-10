@@ -405,13 +405,22 @@ bool DTE::command_cb::process_line(uint8_t *data, size_t consumed, size_t len, D
 {
     // returning true indicates that the processing finished and lower layers can destroy the accumulated buffer
 #ifdef CONFIG_ESP_MODEM_URC_HANDLER
+    // Copy under line_lock so set_urc_cb() can't tear the std::function while we call it
+    enhanced_urc_cb enhanced_handler;
+    got_line_cb legacy_urc_handler;
+    {
+        Scoped<Lock> l(line_lock);
+        enhanced_handler = enhanced_urc_handler;
+        legacy_urc_handler = urc_handler;
+    }
+
     // Call enhanced URC handler if registered
-    if (enhanced_urc_handler && dte) {
+    if (enhanced_handler && dte) {
         // Create buffer info for enhanced URC handler
         UrcBufferInfo buffer_info = dte->create_urc_info(data, consumed, len);
 
         // Call enhanced URC handler
-        UrcConsumeInfo consume_info = enhanced_urc_handler(buffer_info);
+        UrcConsumeInfo consume_info = enhanced_handler(buffer_info);
 
         // Handle consumption control
         switch (consume_info.result) {
@@ -443,8 +452,8 @@ bool DTE::command_cb::process_line(uint8_t *data, size_t consumed, size_t len, D
     // Fallback to legacy URC handler if enhanced handler not set
     // Skip it while a command is actively awaiting its response, so command replies aren't reported as URCs
     bool command_active = (got_line != nullptr && result == command_result::TIMEOUT);
-    if (urc_handler && !command_active) {
-        bool consume_buffer = urc_handler(data, consumed + len) != command_result::TIMEOUT;
+    if (legacy_urc_handler && !command_active) {
+        bool consume_buffer = legacy_urc_handler(data, consumed + len) != command_result::TIMEOUT;
         return consume_buffer;   // this line has been processed already (got OK or FAIL previously)
     }
 #endif
